@@ -1,21 +1,10 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Card } from '@/components/ui/Card';
-
-interface Poll {
-  id: string;
-  question: string;
-  createdAt: string;
-  options: Array<{
-    id: string;
-    text: string;
-    _count: { votes: number };
-  }>;
-}
 
 export default function HomePage() {
   const router = useRouter();
@@ -23,23 +12,6 @@ export default function HomePage() {
   const [options, setOptions] = useState(['', '']);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [existingPolls, setExistingPolls] = useState<Poll[]>([]);
-
-  useEffect(() => {
-    fetchExistingPolls();
-  }, []);
-
-  const fetchExistingPolls = async () => {
-    try {
-      const response = await fetch('/api/polls');
-      if (response.ok) {
-        const polls = await response.json();
-        setExistingPolls(polls);
-      }
-    } catch (err) {
-      // Ignore error for existing polls
-    }
-  };
 
   const addOption = () => {
     if (options.length < 10) {
@@ -74,14 +46,13 @@ export default function HomePage() {
         }),
       });
 
-      const data = await response.json();
-
       if (!response.ok) {
+        const data = await response.json();
         throw new Error(data.error || 'Failed to create poll');
       }
 
-      router.push(`/poll/${data.id}`);
-      fetchExistingPolls(); // Refresh existing polls list
+      const poll = await response.json();
+      router.push(`/poll/${poll.id}`);
     } catch (err: any) {
       setError(err.message);
     } finally {
@@ -167,34 +138,6 @@ export default function HomePage() {
             </Button>
           </form>
         </Card>
-
-        {/* Existing Polls Section */}
-        {existingPolls.length > 0 && (
-          <Card className="mt-8">
-            <div className="p-6">
-              <h2 className="text-xl font-bold mb-4">Existing Polls</h2>
-              <div className="space-y-3">
-                {existingPolls.map((poll) => (
-                  <div
-                    key={poll.id}
-                    className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:border-gray-300 cursor-pointer transition-colors"
-                    onClick={() => router.push(`/poll/${poll.id}`)}
-                  >
-                    <div>
-                      <h3 className="font-medium">{poll.question}</h3>
-                      <p className="text-sm text-gray-500">
-                        {poll.options.length} options • {poll.options.reduce((sum, opt) => sum + opt._count.votes, 0)} votes
-                      </p>
-                    </div>
-                    <Button variant="outline" size="sm">
-                      View Poll
-                    </Button>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </Card>
-        )}
 
         <p className="text-center text-gray-500 text-sm mt-6">
           Built with Next.js, Socket.IO, and PostgreSQL
