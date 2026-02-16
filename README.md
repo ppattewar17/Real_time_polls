@@ -11,11 +11,13 @@ This application implements **2 distinct anti-abuse mechanisms** to ensure fair 
 ### 1. Browser Fingerprinting (Client-Side + Server Validation)
 
 **What it prevents:**
+
 - Multiple votes from the same browser/device
 - Vote manipulation through page refresh
 - Duplicate voting attempts
 
 **How it's enforced:**
+
 - Generates unique browser fingerprint using canvas rendering, screen resolution, timezone, language, and hardware specs
 - Fingerprint stored in localStorage and sent with each vote
 - Server validates fingerprint against database before accepting vote
@@ -24,17 +26,20 @@ This application implements **2 distinct anti-abuse mechanisms** to ensure fair 
 **Implementation:** `lib/fingerprint.ts` + `app/api/vote/route.ts` (lines 60-70)
 
 **Limitations:**
+
 - Can be bypassed by clearing browser data or using incognito mode
 - Different browsers on same device = different fingerprints
 
 ### 2. IP Address Tracking (Server-Side)
 
 **What it prevents:**
+
 - Multiple votes from the same network/location
 - Automated bot voting from single IP
 - Vote farming from same connection
 
 **How it's enforced:**
+
 - Extracts client IP from request headers (x-forwarded-for, x-real-ip, cf-connecting-ip)
 - Stores IP address with each vote in database
 - Checks both fingerprint AND IP before allowing vote
@@ -43,6 +48,7 @@ This application implements **2 distinct anti-abuse mechanisms** to ensure fair 
 **Implementation:** `lib/rateLimit.ts` (getClientIp) + `app/api/vote/route.ts` (lines 60-70)
 
 **Limitations:**
+
 - Users behind same NAT/proxy share IP
 - VPN/proxy can change IP address
 - Dynamic IPs may allow revoting after IP change
@@ -50,11 +56,13 @@ This application implements **2 distinct anti-abuse mechanisms** to ensure fair 
 ### 3. Rate Limiting (Bonus Protection)
 
 **What it prevents:**
+
 - Rapid-fire voting attempts
 - Automated bot attacks
 - API abuse
 
 **How it's enforced:**
+
 - In-memory rate limiter: 1 vote per 5 seconds per IP+Poll combination
 - Returns 429 Too Many Requests with Retry-After header
 - Automatic cleanup of expired rate limit entries
@@ -62,6 +70,7 @@ This application implements **2 distinct anti-abuse mechanisms** to ensure fair 
 **Implementation:** `lib/rateLimit.ts` + `app/api/vote/route.ts` (lines 35-55)
 
 **Limitations:**
+
 - In-memory storage (resets on server restart)
 - Not shared across multiple server instances
 
@@ -85,26 +94,52 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
-## Environment Variables
+🗳️ Real-Time Poll Rooms
 
-Required environment variables for deployment:
+A full-stack web application that allows users to create polls, share them via a link, and collect votes with results updating in real time for all viewers.
 
-```env
-DATABASE_URL="postgresql://user:password@host:5432/database"
-DIRECT_URL="postgresql://user:password@host:5432/database"
-NEXT_PUBLIC_APP_URL="https://your-app.vercel.app"
-NEXT_PUBLIC_SOCKET_URL="https://your-app.vercel.app"
-NODE_ENV="production"
-```
+🔗 Live Demo: https://real-time-polls.vercel.app
 
-## Deploy on Vercel
+📦 Repository: https://github.com/ppattewar17/Real_time_polls
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+✨ Features
 
-1. Push code to GitHub
-2. Import project in Vercel
-3. Add Vercel Postgres database
-4. Set environment variables
-5. Deploy
+📝 Create a poll with a question and multiple options
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+🔗 Shareable poll link (no login required)
+
+🗳️ Single-choice voting
+
+⚡ Real-time result updates for all connected users
+
+🛡️ Anti-abuse mechanisms to prevent repeat voting
+
+💾 Persistent storage (polls & votes survive refresh)
+
+☁️ Deployed and publicly accessible
+
+🛠️ Tech Stack
+
+Frontend
+
+Next.js (App Router)
+
+React
+
+TypeScript
+
+Tailwind CSS
+
+Backend
+
+Next.js API Routes
+
+Prisma ORM
+
+Database
+
+PostgreSQL (Neon)
+
+Deployment
+
+Vercel
